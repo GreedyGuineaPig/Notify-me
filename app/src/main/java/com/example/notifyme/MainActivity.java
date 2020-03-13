@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onReceive(Context context, Intent intent) {
+            setNotificationButtonState(false, true, true);
             updateNotification();
         }
     }
@@ -72,14 +73,29 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void sendNotification() {
-        NotificationCompat.Builder notifyBuilder = getNotificationBuilder();
-        mNotifyManager.notify(NOTIFICATION_ID,notifyBuilder.build());
-        setNotificationButtonState(false, true, true);
+
+        // Sets up the pending intent to update the notification.
+        // Corresponds to a press of the Update Me! button.
         Intent updateIntent = new Intent(ACTION_UPDATE_NOTIFICATION);
-        PendingIntent updatePendingIntent = PendingIntent.getBroadcast
-                (this, NOTIFICATION_ID, updateIntent, PendingIntent.FLAG_ONE_SHOT);
-        notifyBuilder.addAction(R.drawable.ic_update, "Update Notification", updatePendingIntent);
+        PendingIntent updatePendingIntent = PendingIntent.getBroadcast(this,
+                NOTIFICATION_ID, updateIntent, PendingIntent.FLAG_ONE_SHOT);
+
+        // Build the notification with all of the parameters using helper
+        // method.
+        NotificationCompat.Builder notifyBuilder = getNotificationBuilder();
+
+        // Add the action button using the pending intent.
+        notifyBuilder.addAction(R.drawable.ic_update,
+                getString(R.string.update), updatePendingIntent);
+
+        // Deliver the notification.
+        mNotifyManager.notify(NOTIFICATION_ID, notifyBuilder.build());
+
+        // Enable the update and cancel buttons but disables the "Notify
+        // Me!" button.
+        setNotificationButtonState(false, true, true);
     }
+
 
     public void createNotificationChannel() {
         mNotifyManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -105,7 +121,8 @@ public class MainActivity extends AppCompatActivity {
                 .setContentIntent(notificationPendingIntent)
                 .setAutoCancel(true)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
-                .setPriority(NotificationCompat.PRIORITY_HIGH);
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setDeleteIntent(notificationPendingIntent);
 
         return notifyBuilder;
 
@@ -115,9 +132,12 @@ public class MainActivity extends AppCompatActivity {
         Bitmap androidImage = BitmapFactory
                 .decodeResource(getResources(),R.drawable.mascot_1);
         NotificationCompat.Builder notifyBuilder = getNotificationBuilder();
-        notifyBuilder.setStyle(new NotificationCompat.BigPictureStyle()
-                .bigPicture(androidImage)
-                .setBigContentTitle("Notification Updated!"));
+        notifyBuilder.setStyle(new NotificationCompat.InboxStyle()
+                .addLine("First line")
+                .addLine("Second line")
+                .addLine("Third line")
+                .setBigContentTitle("Notification Updated!")
+                .setSummaryText("+3 moreeeeeeeeeeee"));
         mNotifyManager.notify(NOTIFICATION_ID, notifyBuilder.build());
         setNotificationButtonState(false, false, true);
     }
